@@ -4,6 +4,28 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-WebSocket-009688)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
+仓库里有两个独立应用：
+
+| 应用 | 目录 | 形态 | 入口 |
+| --- | --- | --- | --- |
+| 作息 | `zuoxi/` | 纯静态单页，浏览器本地存数据 | [github.io 在线版](https://wwjay1024.github.io/Personal-WorkDashboard-IPAD/) |
+| 局域网看板 | 根目录 `app/` + `static/` | FastAPI 服务，局域网多设备实时同步 | 本机启动后访问 `http://<本机 IP>:9090/` |
+
+---
+
+## 作息（静态版）
+
+一个月历装下排到月底的计划，同时盯着久坐时长。打开网页即用，无注册、无后端、无数据库，数据存在浏览器 `localStorage`，不上传。
+
+- **在线版**：https://wwjay1024.github.io/Personal-WorkDashboard-IPAD/ —— 由 GitHub Actions 在推送 `zuoxi/` 后自动发布，无需手动部署。
+- **本地预览**：在 `zuoxi/` 目录起任意静态服务器，例如 `python3 -m http.server 8000`，打开 `http://localhost:8000/`。
+- **功能**：周一至周五月历（可拖拽改期）、当日事项、久坐计时与提醒、单张便签、设置抽屉。
+- **设计细节**：见 [`docs/产品方案.md`](docs/产品方案.md)。
+
+---
+
+## 局域网看板（FastAPI 版）
+
 一个**本地优先**的局域网看板系统：在 Mac（或任意一台常开电脑）上跑一个 FastAPI 服务，iPad / 手机 / 另一台电脑用浏览器打开就能看。日历、便签、久坐计时通过 WebSocket 实时同步——在电脑上改一下，iPad 秒级刷新。
 
 - 🖥 **本地优先**：数据以 JSON 文件存在本机，无云依赖、无数据库，随改随看。
@@ -200,15 +222,20 @@ launchctl unload ~/Library/LaunchAgents/com.local.ipad-dashboard.plist
 ## 目录结构
 
 ```
-app/
-  main.py            # FastAPI 应用装配与 WebSocket
+zuoxi/               # 作息：纯静态单页应用，部署到 GitHub Pages
+  index.html
+  styles.css
+  js/                # store / calendar / daypanel / sitting / notes / settings / ui / main
+app/                 # 局域网看板：FastAPI 服务
+  main.py            # 应用装配与 WebSocket
   api/               # REST 路由（data / sitting / system）
   models/            # Pydantic 数据模型（CalendarItem / Note / SittingState / DashboardConfig）
   services/          # 数据服务、文件监听、久坐计时、休息提醒、调度
   config/            # 配置加载（config.yaml → settings）
 static/              # 前端：index.html / editor.html / app.js / editor.js / styles.css
 scripts/             # install.sh · start_dashboard.sh · launchd 模板
-docs/images/         # README 截图
+docs/                # 产品方案与截图
+.github/workflows/   # deploy-pages.yml：推送 zuoxi/ 后自动发布
 dashboard.json       # 看板布局
 config.yaml.example  # 配置示例（复制为 config.yaml 使用）
 data/                # 运行时数据（自动生成，不纳入版本库）
