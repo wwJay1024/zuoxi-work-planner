@@ -1,1 +1,0 @@
-"""iPad dashboard backend package."""

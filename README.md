@@ -1,244 +1,67 @@
-# 个人工作看板
+# 作息
 
-![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
-![FastAPI](https://img.shields.io/badge/FastAPI-WebSocket-009688)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-仓库里有两个独立应用：
+一个月历装下排到月底的计划，同时盯着久坐时长。打开网页即用，无注册、无后端、无数据库，数据存在浏览器本地，不上传。
 
-| 应用 | 目录 | 形态 | 入口 |
-| --- | --- | --- | --- |
-| 作息 | `zuoxi/` | 纯静态单页，浏览器本地存数据 | [github.io 在线版](https://wwjay1024.github.io/Personal-WorkDashboard-IPAD/) |
-| 局域网看板 | 根目录 `app/` + `static/` | FastAPI 服务，局域网多设备实时同步 | 本机启动后访问 `http://<本机 IP>:9090/` |
-
----
-
-## 作息（静态版）
-
-一个月历装下排到月底的计划，同时盯着久坐时长。打开网页即用，无注册、无后端、无数据库，数据存在浏览器 `localStorage`，不上传。
-
-- **在线版**：https://wwjay1024.github.io/Personal-WorkDashboard-IPAD/ —— 由 GitHub Actions 在推送 `zuoxi/` 后自动发布，无需手动部署。
-- **本地预览**：在 `zuoxi/` 目录起任意静态服务器，例如 `python3 -m http.server 8000`，打开 `http://localhost:8000/`。
-- **功能**：周一至周五月历（可拖拽改期）、当日事项、久坐计时与提醒、单张便签、设置抽屉。
-- **设计细节**：见 [`docs/产品方案.md`](docs/产品方案.md)。
-
----
-
-## 局域网看板（FastAPI 版）
-
-一个**本地优先**的局域网看板系统：在 Mac（或任意一台常开电脑）上跑一个 FastAPI 服务，iPad / 手机 / 另一台电脑用浏览器打开就能看。日历、便签、久坐计时通过 WebSocket 实时同步——在电脑上改一下，iPad 秒级刷新。
-
-- 🖥 **本地优先**：数据以 JSON 文件存在本机，无云依赖、无数据库，随改随看。
-- ⚡ **实时推送**：文件监听 + WebSocket，编辑 `data/*.json` 或使用网页编辑器，看板立即更新。
-- 📱 **为大屏而生**：横屏 iPad 常驻展示，组件可自由排序、调整大小。
-- 🔧 **易于扩展**：新增一个组件只需四个文件级步骤（见下文）。
-
-## 截图
-
-| 看板（iPad 横屏展示） | 编辑器（Mac 上维护内容） |
-| --- | --- |
-| [![看板](docs/images/dashboard.jpg)](docs/images/dashboard.jpg) | [![编辑器](docs/images/editor.jpg)](docs/images/editor.jpg) |
-
-左侧看板三分区：日历、久坐计时、便签。右侧编辑器是单页布局——左边周历选日期加事项，右边写便签，改完看板自动同步。
-
----
+**在线版**：https://wwjay1024.github.io/Personal-WorkDashboard-IPAD/
 
 ## 功能
 
-| 组件             | 说明                              |
-| -------------- | ------------------------------- |
-| 日历 `calendar`  | 工作日周历视图，按天记录事项，可勾选完成            |
-| 便签 `notes`     | 便签墙，置顶优先                        |
-| 久坐计时 `sitting` | 连续久坐计时与提醒，含离座 / 回座 / 结束计时 / 去开会 |
-| 休息提醒           | 按配置的时间点在看板上弹出休息提示               |
+- **月历**：只显示周一至周五，可拖拽事项改期，点格子查看当日全部事项。
+- **当日事项**：新增、编辑、勾选完成、删除与撤销。
+- **久坐计时**：开始工作 / 去休息 / 结束三个动作，跨刷新与机器挂起都能正确结算。
+- **提醒**：连续久坐满间隔弹全屏遮罩，午休静默，默认仅工作日。
+- **便签**：单张便利贴，六种颜色可选。
+- **设置抽屉**：提醒参数、示例数据、清空数据。
 
-另含：单页网页编辑器（`/editor.html`）、健康检查。
+## 截图
 
-## 技术栈
+| 工作中 | 已休息 |
+| --- | --- |
+| ![工作中](zuoxi/screenshots/工作中.jpg) | ![已休息](zuoxi/screenshots/已休息.jpg) |
 
-Python 3.10+ · FastAPI · Uvicorn · Pydantic v2 · WebSocket · watchdog · APScheduler · loguru。  
-前端为零依赖的原生 HTML / CSS / JavaScript。
+| 休息提醒 | 设置 |
+| --- | --- |
+| ![休息提醒](zuoxi/screenshots/休息提醒.jpg) | ![设置](zuoxi/screenshots/设置.jpg) |
 
----
+## 本地运行
 
-## 快速开始
-
-```bash
-# 1. 克隆
-git clone https://github.com/wwJay1024/Personal-WorkDashboard-IPAD.git
-cd Personal-WorkDashboard-IPAD
-
-# 2. 一键安装：创建虚拟环境、安装依赖、按示例生成 config.yaml
-./scripts/install.sh
-source .venv/bin/activate
-
-# 3. 启动（默认监听 0.0.0.0:9090）
-./scripts/start_dashboard.sh
-```
-
-启动后访问：
-
-| 用途          | 地址                                  |
-| ----------- | ----------------------------------- |
-| iPad / 大屏看板 | `http://<本机局域网 IP>:9090/`           |
-| 网页编辑器       | `http://localhost:9090/editor.html` |
-| 健康检查        | `http://localhost:9090/health`      |
-
-查看本机局域网 IP（macOS）：
+纯静态站点，无需安装依赖。进入 `zuoxi/` 目录起任意静态服务器：
 
 ```bash
-ipconfig getifaddr en0
+cd zuoxi
+python3 -m http.server 8000
 ```
 
-> 端口可用环境变量覆盖：`DASHBOARD_PORT=8080 DASHBOARD_HOST=0.0.0.0 ./scripts/start_dashboard.sh`
+打开 `http://localhost:8000/`。
 
----
+## 数据与隐私
 
-## 配置
+数据存在浏览器 `localStorage`（键名 `zuoxi.state.v1`），同一浏览器同一域名共享一份，不同浏览器和设备各自独立。没有账号登录、多设备同步、云端备份或数据上传。清除浏览器数据会丢失日程。
 
-### `config.yaml` — 服务与提醒
+## 部署
 
-由 `install.sh` 从 `config.yaml.example` 生成，包含：
-
-- `server`：监听地址、端口、数据目录、看板配置文件路径。
-- `reminder`：休息提醒，详见下节。
-
-**不配置也能跑**：缺少 `config.yaml` 时程序使用内置默认值启动，可先跑起来再补。
-
-### 休息提醒怎么设置
-
-提醒完全由 `config.yaml` 的 `reminder` 段控制，没有其他入口：
-
-```yaml
-reminder:
-  enabled: true                 # 总开关
-  times:                        # 提醒时刻，24 小时制 HH:MM，想提醒几次就写几行
-    - "10:00"
-    - "11:00"
-    - "15:00"
-    - "16:30"
-  weekdays_only: true           # 只在周一至周五触发
-  message: 该休息一下了          # 弹层正文
-  break_duration_seconds: 300   # 弹层倒计时秒数，归零自动关闭
-```
-
-| 字段 | 类型 | 默认值 | 说明 |
-| --- | --- | --- | --- |
-| `enabled` | bool | `true` | 总开关，`false` 则完全不再提醒 |
-| `times` | 字符串数组 | `10:00`、`11:00`、`15:00`、`16:30` | 触发时刻，必须写成 `HH:MM`（如 `09:30`），按分钟精确匹配 |
-| `weekdays_only` | bool | `true` | `true` 仅周一到周五；`false` 则每天 |
-| `message` | string | `该休息一下了` | 弹层标题文案 |
-| `break_duration_seconds` | int | `300` | 弹层倒计时长度（秒），到 0 自动关闭 |
-
-运行行为：
-
-- 服务端每 30 秒比对一次当前时间，命中 `times` 中的时刻就通过 WebSocket 广播，**所有已打开的看板页面同时弹出全屏提醒**，可点「继续工作」提前关掉。
-- 每个时刻每天只触发一次，跨天自动重置。
-- 属于即时推送：那一刻没开着的页面收不到，也不会补发或重放。
-- 改完 `config.yaml` 要重启服务才生效。
-
-### `dashboard.json` — 看板布局
-
-控制看板上显示哪些组件、顺序、标题、大小与子配置。示例：
-
-```json
-{
-  "version": "1.0",
-  "title": "iPad 数据看板",
-  "theme": "warm-ink",
-  "components": [
-    { "id": "calendar", "type": "calendar", "title": "日历", "size": "large-tall", "data_type": "calendar" },
-    { "id": "sitting",  "type": "sitting",  "title": "久坐计时", "size": "medium", "data_type": "sitting", "options": { "caption": "连续久坐提醒" } },
-    { "id": "notes",    "type": "notes",    "title": "便签", "size": "medium", "data_type": "notes", "options": { "caption": "置顶优先", "limit": 6 } }
-  ]
-}
-```
-
-`type` 需为上文「功能」表中已支持的组件类型。若 `dashboard.json` 不存在，服务会生成一份默认布局。
-
-### `data/` — 运行时数据
-
-`data/*.json` 是你的日程、便签、久坐记录等真实数据，首次运行自动生成，**已被 `.gitignore` 排除**。可直接编辑，保存后通过文件监听实时推送到看板。
-
----
-
-## 使用方式
-
-- **网页编辑**：打开 `http://localhost:9090/editor.html`，左边选日期加事项，右边写便签，改动即时同步到看板。
-- **直接改文件**：编辑 `data/calendar.json`、`data/notes.json`，保存即推送。
-- **改布局**：调整 `dashboard.json` 的组件顺序 / 大小 / 显隐。
-- **改配置**：编辑 `config.yaml` 后重启服务生效。
-
-### API 示例
-
-```bash
-# 读取某类数据
-curl http://localhost:9090/api/data/calendar
-
-# 新增一条日历事项
-curl -X POST http://localhost:9090/api/data/calendar \
-  -H "Content-Type: application/json" \
-  -d '{"text":"周会","date":"2026-10-20"}'
-
-# 健康检查
-curl http://localhost:9090/health
-```
-
-数据类 CRUD 端点：`GET/POST /api/data/{type}`、`PUT/DELETE /api/data/{type}/{id}`；  
-`{type}` 可为 `calendar`、`notes`。
-
-久坐计时走独立端点（前缀 `/api/sitting`）：`GET /status`，`POST /start`、`/stop`、`/away`、`/back`、`/meeting/start`、`/meeting/stop`、`/reminder-response`。
-
----
-
-## 扩展一个组件
-
-1. 在 `app/models/` 增加对应的 Pydantic 模型（若有需要持久化的记录）。
-2. 在 `app/main.py` 的 `data_service.register(...)` 注册数据类型。
-3. 在 `static/app.js` 的 `renderers` 中新增同名渲染函数。
-4. 在 `dashboard.json` 的 `components` 增加一条该组件的配置。
-
----
-
-## 开机自启（macOS）
-
-使用 `launchd` 常驻运行：
-
-```bash
-PROJECT_DIR="$(pwd)"
-sed "s#__PROJECT_DIR__#$PROJECT_DIR#g" scripts/launchd.plist.template \
-  > ~/Library/LaunchAgents/com.local.ipad-dashboard.plist
-launchctl load ~/Library/LaunchAgents/com.local.ipad-dashboard.plist
-```
-
-停止 / 卸载：
-
-```bash
-launchctl unload ~/Library/LaunchAgents/com.local.ipad-dashboard.plist
-```
-
----
+`zuoxi/` 是要发布的全部内容。推送到 `main` 分支后，`.github/workflows/deploy-pages.yml` 会自动把该目录发布到 GitHub Pages。
 
 ## 目录结构
 
 ```
-zuoxi/               # 作息：纯静态单页应用，部署到 GitHub Pages
-  index.html
-  styles.css
-  js/                # store / calendar / daypanel / sitting / notes / settings / ui / main
-app/                 # 局域网看板：FastAPI 服务
-  main.py            # 应用装配与 WebSocket
-  api/               # REST 路由（data / sitting / system）
-  models/            # Pydantic 数据模型（CalendarItem / Note / SittingState / DashboardConfig）
-  services/          # 数据服务、文件监听、久坐计时、休息提醒、调度
-  config/            # 配置加载（config.yaml → settings）
-static/              # 前端：index.html / editor.html / app.js / editor.js / styles.css
-scripts/             # install.sh · start_dashboard.sh · launchd 模板
-docs/                # 产品方案与截图
-.github/workflows/   # deploy-pages.yml：推送 zuoxi/ 后自动发布
-dashboard.json       # 看板布局
-config.yaml.example  # 配置示例（复制为 config.yaml 使用）
-data/                # 运行时数据（自动生成，不纳入版本库）
+zuoxi/
+├── index.html          页面结构
+├── styles.css          样式（含深色模式）
+├── screenshots/        四张功能截图
+└── js/
+    ├── main.js         启动装配与模块订阅
+    ├── store.js        状态读写、localStorage 持久化
+    ├── calendar.js     月历渲染、拖拽改期、月份切换
+    ├── daypanel.js     当日事项列表
+    ├── sitting.js      久坐状态机、计时、提醒规则
+    ├── notes.js        便签
+    ├── settings.js     设置抽屉
+    └── ui.js           弹层、撤销条、确认框
+.github/workflows/
+└── deploy-pages.yml    推送后自动发布到 GitHub Pages
 ```
 
 ## 许可证
