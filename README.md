@@ -4,7 +4,7 @@
 
 一个月历装下排到月底的计划，同时盯着久坐时长。打开网页即用，无注册、无后端、无数据库，数据存在浏览器本地，不上传。
 
-**在线版**：https://wwjay1024.github.io/Personal-WorkDashboard-IPAD/
+**在线版**：https://wwjay1024.github.io/zuoxi-work-planner/
 
 ## 功能
 
